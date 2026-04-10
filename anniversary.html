@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一週年 ♡</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500&family=Playfair+Display:ital@1&family=Cormorant+Garamond:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cream:#fdf6ef;--parchment:#f0e0c8;
+  --rose:#c97a7a;--rose-dark:#9e5a5a;--rose-light:#e8b4a4;
+  --gold:#c9a96e;--gold-light:#e2cda0;
+  --ink:#3a2a1e;--ink-light:#5c3e2e;--muted:#9b8070;
+}
+html,body{width:100%;min-height:100vh;overflow-x:hidden}
+body{background:var(--cream);font-family:'Noto Serif TC',serif;color:var(--ink);display:flex;flex-direction:column;align-items:center}
+
+/* ════════════════════════════
+   LOCK SCREEN
+════════════════════════════ */
+#lockScreen{
+  position:fixed;inset:0;z-index:1000;
+  background:#1a0f0a;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity 1.2s ease, transform 1.2s ease;
+  overflow:hidden;
+}
+#lockScreen.unlocking{
+  opacity:0;transform:scale(1.06);pointer-events:none;
+}
+
+/* Subtle dark petals on lock screen */
+.lock-petal{position:absolute;opacity:0;animation:lockFall linear infinite;pointer-events:none}
+@keyframes lockFall{
+  0%  {transform:translateY(-40px) rotate(0deg);opacity:0}
+  10% {opacity:.18}
+  90% {opacity:.1}
+  100%{transform:translateY(110vh) rotate(360deg);opacity:0}
+}
+
+.lock-label{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:.85rem;
+  color:rgba(232,180,164,.55);
+  letter-spacing:.28em;text-transform:uppercase;
+  margin-bottom:1.4rem;
+}
+.lock-title{
+  font-family:'Playfair Display',serif;
+  font-style:italic;
+  font-size:clamp(1.4rem,4.5vw,2rem);
+  color:rgba(253,246,239,.88);
+  text-align:center;
+  line-height:1.5;
+  margin-bottom:.5rem;
+  padding:0 1.5rem;
+}
+.lock-subtitle{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:.88rem;
+  color:rgba(201,121,122,.6);
+  margin-bottom:2.8rem;
+  letter-spacing:.08em;
+}
+
+/* Input area */
+.lock-input-wrap{
+  position:relative;
+  display:flex;align-items:center;
+  gap:0;
+}
+#lockInput{
+  background:transparent;
+  border:none;border-bottom:1px solid rgba(201,169,110,.45);
+  color:rgba(253,246,239,.9);
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.2rem;font-style:italic;
+  text-align:center;
+  width:180px;
+  padding:.3rem .5rem;
+  outline:none;
+  letter-spacing:.25em;
+  caret-color:var(--rose-light);
+  transition:border-color .3s;
+}
+#lockInput::placeholder{
+  color:rgba(201,169,110,.25);
+  letter-spacing:.1em;font-size:1.4rem;
+}
+#lockInput:focus{border-bottom-color:rgba(201,121,122,.7)}
+
+/* Shake on wrong */
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}
+.shake{animation:shake .4s ease !important}
+
+.lock-error{
+  margin-top:.9rem;
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:.88rem;
+  color:rgba(201,121,122,.75);
+  letter-spacing:.05em;
+  opacity:0;transition:opacity .3s;
+  height:1.2rem;
+}
+.lock-error.show{opacity:1}
+
+/* Decorative ring around input */
+.lock-ring{
+  position:absolute;
+  width:260px;height:260px;
+  border-radius:50%;
+  border:1px solid rgba(201,169,110,.1);
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  animation:pulse 3s ease-in-out infinite;
+}
+.lock-ring:nth-child(2){
+  width:320px;height:320px;
+  border-color:rgba(201,169,110,.06);
+  animation-delay:1s;
+}
+@keyframes pulse{
+  0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1}
+  50%{transform:translate(-50%,-50%) scale(1.04);opacity:.6}
+}
+
+/* Hint */
+.lock-hint{
+  margin-top:2.4rem;
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:.78rem;
+  color:rgba(201,169,110,.3);
+  letter-spacing:.12em;
+}
+
+
+/* ════════════════════════════
+   UNLOCK BURST CANVAS
+════════════════════════════ */
+#burstCanvas{
+  position:fixed;inset:0;z-index:999;
+  pointer-events:none;opacity:0;
+  transition:opacity .15s;
+}
+
+/* ════════════════════════════
+   MAIN CONTENT
+════════════════════════════ */
+.bg-texture{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 15% 15%,rgba(201,121,122,.08) 0%,transparent 55%),
+             radial-gradient(ellipse at 85% 85%,rgba(201,169,110,.08) 0%,transparent 55%)}
+.petals-bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.petal{position:absolute;opacity:0;animation:fall linear infinite}
+@keyframes fall{
+  0%  {transform:translateY(-60px) rotate(0deg) translateX(0);opacity:0}
+  10% {opacity:.5}
+  50% {transform:translateY(50vh) rotate(200deg) translateX(18px)}
+  90% {opacity:.3}
+  100%{transform:translateY(110vh) rotate(400deg) translateX(-14px);opacity:0}
+}
+
+.page{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;
+  gap:2.2rem;padding:3.5rem 1.5rem 4rem;width:100%;max-width:580px}
+
+.fade-in{opacity:0;animation:fadeUp .8s ease forwards}
+.fade-in:nth-child(1){animation-delay:.2s}
+.fade-in:nth-child(2){animation-delay:.6s}
+.fade-in:nth-child(3){animation-delay:1s}
+.fade-in:nth-child(4){animation-delay:1.3s}
+.fade-in:nth-child(5){animation-delay:1.6s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* Header */
+.header{text-align:center}
+.header .label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.95rem;
+  color:var(--muted);letter-spacing:.28em;text-transform:uppercase;margin-bottom:.5rem}
+.header h1{font-family:'Playfair Display',serif;font-style:italic;
+  font-size:clamp(1.9rem,5.5vw,2.8rem);font-weight:400;color:var(--ink);line-height:1.2}
+.header .date{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem;
+  color:var(--rose);margin-top:.4rem;letter-spacing:.05em}
+
+/* Day counter — parallax target */
+.day-counter{display:flex;flex-direction:column;align-items:center;gap:.15rem;
+  will-change:transform;}
+.day-number{font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(3.5rem,12vw,5.5rem);color:var(--rose);line-height:1;font-weight:300}
+.day-label{font-size:.8rem;color:var(--muted);letter-spacing:.22em;text-transform:uppercase}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:.8rem;width:100%;max-width:280px}
+.divider::before{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,var(--gold-light))}
+.divider::after {content:'';flex:1;height:1px;background:linear-gradient(to left, transparent,var(--gold-light))}
+
+/* Music hint */
+.music-hint{display:flex;align-items:center;gap:.65rem;font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:.92rem;color:var(--muted)}
+.music-note{display:inline-flex;align-items:flex-end;gap:3px;height:20px}
+.music-note span{display:inline-block;width:3px;background:var(--rose-light);border-radius:2px;animation:wave 1.2s ease-in-out infinite}
+.music-note span:nth-child(1){height:10px;animation-delay:0s}
+.music-note span:nth-child(2){height:16px;animation-delay:.15s}
+.music-note span:nth-child(3){height:12px;animation-delay:.3s}
+.music-note span:nth-child(4){height:18px;animation-delay:.45s}
+.music-note span:nth-child(5){height:10px;animation-delay:.6s}
+@keyframes wave{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.35)}}
+
+/* Spotify */
+.spotify-wrapper{width:100%;max-width:400px;border-radius:14px;overflow:hidden;
+  box-shadow:0 4px 24px rgba(58,42,30,.13);border:1px solid rgba(201,169,110,.3)}
+.spotify-wrapper iframe{display:block;width:100%;height:100px;border:none}
+
+/* Envelope */
+.envelope-scene{width:100%;max-width:440px}
+.envelope-hint{text-align:center;font-size:.82rem;color:var(--muted);font-style:italic;
+  margin-bottom:1rem;letter-spacing:.04em;transition:opacity .4s;
+  font-family:'Cormorant Garamond',serif}
+
+.envelope-wrapper{position:relative;width:100%;cursor:pointer;user-select:none;
+  transition:transform .3s ease}
+.envelope-wrapper:hover{transform:translateY(-4px)}
+.env-shadow{position:absolute;bottom:-12px;left:8%;right:8%;height:16px;
+  background:rgba(58,42,30,.18);border-radius:50%;filter:blur(8px);
+  transition:opacity .3s;opacity:.15}
+.envelope-wrapper:hover .env-shadow{opacity:.25}
+
+.env-svg-wrap{width:100%;position:relative}
+.env-svg-wrap svg{width:100%;height:auto;display:block}
+
+.wax-seal{position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:52px;height:52px;
+  background:radial-gradient(circle at 35% 30%,#d8806e,#a03528);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 12px rgba(160,53,40,.5),inset 0 1px 2px rgba(255,200,180,.4);
+  z-index:6;transition:opacity .4s,transform .5s cubic-bezier(.34,1.56,.64,1);
+  font-size:22px;line-height:1}
+.wax-seal::before{content:'';position:absolute;inset:4px;border-radius:50%;
+  border:1px solid rgba(255,200,180,.4)}
+.envelope-wrapper.is-open .wax-seal{
+  opacity:0;transform:translate(-50%,-50%) scale(0) rotate(45deg)}
+
+/* Letter */
+.letter-outer{max-height:0;overflow:hidden;
+  transition:max-height 1s cubic-bezier(.4,0,.2,1)}
+.letter-outer.open{max-height:3500px}
+.letter-paper{margin:.8rem .2rem 0;background:#fffef9;
+  border:1px solid rgba(201,169,110,.3);border-radius:4px;
+  box-shadow:0 6px 28px rgba(58,42,30,.11);overflow:hidden;
+  opacity:0;transform:translateY(-8px);
+  transition:opacity .6s .35s ease,transform .6s .35s ease}
+.letter-outer.open .letter-paper{opacity:1;transform:translateY(0)}
+.letter-inner{padding:2rem 2rem 1.8rem;position:relative;z-index:1}
+.letter-heading{font-family:'Noto Serif TC',serif;font-size:1.1rem;font-weight:500;
+  color:var(--rose-dark);margin-bottom:1.3rem}
+.letter-para{font-family:'Noto Serif TC',serif;font-size:.9rem;font-weight:300;
+  line-height:2;color:var(--ink-light);margin-bottom:1rem;
+  opacity:0;transform:translateY(6px);
+  transition:opacity .6s ease,transform .6s ease}
+.letter-para.visible{opacity:1;transform:translateY(0)}
+.letter-ps{font-family:'Noto Serif TC',serif;font-size:.82rem;font-weight:300;
+  color:var(--rose);line-height:1.95;margin-top:1rem;display:block;
+  opacity:0;transform:translateY(6px);
+  transition:opacity .6s ease,transform .6s ease}
+.letter-ps.visible{opacity:1;transform:translateY(0)}
+.letter-footer{margin-top:1.8rem;text-align:right;
+  font-family:'Noto Serif TC',serif;font-size:.95rem;font-weight:400;color:var(--ink-light);
+  opacity:0;transform:translateY(6px);
+  transition:opacity .6s ease,transform .6s ease}
+.letter-footer.visible{opacity:1;transform:translateY(0)}
+.letter-line{width:50px;height:1px;background:var(--gold-light);margin:1rem auto 0}
+</style>
+</head>
+<body>
+
+<!-- ══ LOCK SCREEN ══ -->
+<div id="lockScreen">
+  <div class="lock-ring"></div>
+  <div class="lock-ring"></div>
+  <div class="lock-label">for you only</div>
+  <div class="lock-title">我們在一起的第一天</div>
+  <div class="lock-subtitle">輸入那一天的日期解鎖</div>
+  <div class="lock-input-wrap">
+    <input id="lockInput" type="tel" maxlength="8"
+      placeholder="MMDD" autocomplete="off" spellcheck="false"/>
+  </div>
+  <div class="lock-error" id="lockError">日期不對喔，再想想 ♡</div>
+
+</div>
+
+<!-- Burst canvas -->
+<canvas id="burstCanvas"></canvas>
+
+<!-- ══ MAIN ══ -->
+<div class="bg-texture"></div>
+<div class="petals-bg" id="petals"></div>
+
+<div class="page" id="mainPage">
+  <div class="header fade-in">
+    <div class="label">一週年紀念</div>
+    <h1>寫給你的信</h1>
+    <div class="date">♡ &nbsp;2025.03.29 &nbsp;♡</div>
+  </div>
+
+  <div class="day-counter fade-in" id="dayCounter">
+    <div class="day-number" id="dayCount">—</div>
+    <div class="day-label">我們在一起的第幾天</div>
+  </div>
+
+  <div class="divider fade-in"><span style="color:var(--gold);font-size:.75rem;">❀</span></div>
+
+  <div class="music-hint fade-in">
+    <div class="music-note"><span></span><span></span><span></span><span></span><span></span></div>
+    先播上音樂，再打開信封
+  </div>
+
+  <div class="spotify-wrapper fade-in">
+    <iframe src="https://open.spotify.com/embed/track/3XVBdLihbNbxUwZosxcGuJ?utm_source=generator&theme=0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+  </div>
+
+  <div class="envelope-scene fade-in">
+    <div class="envelope-hint" id="hint">點擊信封，打開我想對你說的話 ✦</div>
+    <div class="envelope-wrapper" id="envelope" onclick="toggleEnvelope()">
+      <div class="env-shadow"></div>
+      <div class="env-svg-wrap">
+        <svg viewBox="0 0 440 300" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="envGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#f7ead8"/>
+              <stop offset="100%" style="stop-color:#e8d0aa"/>
+            </linearGradient>
+            <linearGradient id="flapGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#f2dfc0"/>
+              <stop offset="100%" style="stop-color:#e0c898"/>
+            </linearGradient>
+            <filter id="envShadow">
+              <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="rgba(58,42,30,0.15)"/>
+            </filter>
+          </defs>
+
+          <!-- Body -->
+          <rect x="10" y="30" width="420" height="260" rx="6" ry="6"
+            fill="url(#envGrad)" stroke="rgba(180,140,80,0.55)" stroke-width="1"
+            filter="url(#envShadow)"/>
+
+          <!-- V-fold lines -->
+          <line x1="10" y1="290" x2="220" y2="165" stroke="rgba(180,140,80,0.22)" stroke-width="1"/>
+          <line x1="430" y1="290" x2="220" y2="165" stroke="rgba(180,140,80,0.22)" stroke-width="1"/>
+          <polygon points="10,30 10,290 130,165" fill="rgba(220,185,120,0.2)" stroke="rgba(180,140,80,0.25)" stroke-width="0.5"/>
+          <polygon points="430,30 430,290 310,165" fill="rgba(220,185,120,0.2)" stroke="rgba(180,140,80,0.25)" stroke-width="0.5"/>
+          <polygon points="10,290 430,290 220,165" fill="rgba(200,165,100,0.15)" stroke="rgba(180,140,80,0.22)" stroke-width="0.5"/>
+
+          <!-- Decorative inner border -->
+          <rect x="22" y="42" width="396" height="246" rx="4" ry="4"
+            fill="none" stroke="rgba(180,140,80,0.18)" stroke-width="0.8" stroke-dasharray="4,4"/>
+
+          <!-- Corner flourishes -->
+          <text x="30" y="62" font-size="13" fill="rgba(180,140,80,0.4)" font-family="serif">✦</text>
+          <text x="400" y="62" font-size="13" fill="rgba(180,140,80,0.4)" font-family="serif">✦</text>
+          <text x="30" y="284" font-size="13" fill="rgba(180,140,80,0.4)" font-family="serif">✦</text>
+          <text x="400" y="284" font-size="13" fill="rgba(180,140,80,0.4)" font-family="serif">✦</text>
+
+          <!-- Recipient name -->
+          <text x="220" y="220" text-anchor="middle"
+            font-family="'Noto Serif TC', serif"
+            font-size="15" font-weight="400"
+            fill="rgba(94,58,36,0.55)"
+            letter-spacing="6">莊苡慈　收</text>
+
+          <!-- Flap -->
+          <g id="envFlap" style="transform-origin:220px 30px">
+            <polygon points="10,30 430,30 220,180"
+              fill="url(#flapGrad)" stroke="rgba(180,140,80,0.5)" stroke-width="1"/>
+            <polygon points="10,30 430,30 220,75" fill="rgba(255,255,255,0.16)"/>
+          </g>
+        </svg>
+        <div class="wax-seal" id="seal">♡</div>
+      </div>
+    </div>
+
+    <div class="letter-outer" id="letterOuter">
+      <div class="letter-paper">
+        <div class="letter-inner" id="letterInner">
+          <div class="letter-heading">給莊苡慈：</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════
+   LOCK SCREEN
+══════════════════════ */
+const VALID = ['0329','20250329'];
+const input  = document.getElementById('lockInput');
+const errEl  = document.getElementById('lockError');
+const lock   = document.getElementById('lockScreen');
+const canvas = document.getElementById('burstCanvas');
+const ctx    = canvas.getContext('2d');
+
+input.focus();
+
+input.addEventListener('input', () => {
+  const v = input.value.replace(/\D/g,'');
+  input.value = v;
+  errEl.classList.remove('show');
+
+  if (VALID.includes(v)) {
+    unlock();
+  } else if (v.length >= 8) {
+    wrong();
+  }
+});
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (VALID.includes(input.value)) unlock(); else wrong();
+  }
+});
+
+function wrong() {
+  input.classList.remove('shake');
+  void input.offsetWidth;
+  input.classList.add('shake');
+  errEl.classList.add('show');
+  input.value = '';
+}
+
+function unlock() {
+  // Run canvas burst
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.opacity = '1';
+
+  const particles = [];
+  const cols = [
+    '#e8b4a4','#c97a7a','#f5d0c5','#dba89a',
+    '#e2cda0','#c9a96e','#f0e0c8','#d4b8e8',
+    '#b4d4e8','#a8e4c8','#f5d5b0','#ffffff'
+  ];
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+
+  for (let i = 0; i < 220; i++) {
+    const ang  = Math.random() * Math.PI * 2;
+    const spd  = 4 + Math.random() * 14;
+    const sz   = 4 + Math.random() * 8;
+    particles.push({
+      x: cx, y: cy,
+      vx: Math.cos(ang) * spd,
+      vy: Math.sin(ang) * spd - (2 + Math.random() * 5),
+      sz,
+      col: cols[Math.floor(Math.random() * cols.length)],
+      rot: Math.random() * Math.PI * 2,
+      rspd: (Math.random() - .5) * .3,
+      life: 1,
+      decay: .012 + Math.random() * .018,
+      isRound: Math.random() < .25,
+      w: sz * (.3 + Math.random() * .5),
+    });
+  }
+
+  let frame;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    for (const p of particles) {
+      p.x  += p.vx; p.y += p.vy; p.vy += .28;
+      p.vx *= .98;  p.rot += p.rspd;
+      p.life -= p.decay;
+      if (p.life <= 0) continue;
+      alive = true;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.col;
+      if (p.isRound) {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.sz / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillRect(-p.sz/2, -p.w/2, p.sz, p.w);
+      }
+      ctx.restore();
+    }
+    if (alive) { frame = requestAnimationFrame(animate); }
+    else {
+      canvas.style.opacity = '0';
+      cancelAnimationFrame(frame);
+    }
+  }
+  animate();
+
+  // Fade out lock
+  setTimeout(() => {
+    lock.classList.add('unlocking');
+    initMain();
+  }, 180);
+
+  setTimeout(() => {
+    lock.style.display = 'none';
+  }, 1400);
+}
+
+/* Ambient lock screen petals */
+(function(){
+  const cols = ['rgba(232,180,164,.7)','rgba(201,121,122,.6)','rgba(226,205,160,.6)'];
+  for (let i = 0; i < 14; i++) {
+    const el = document.createElement('div');
+    el.className = 'lock-petal';
+    const sz = 6 + Math.random() * 9;
+    el.style.cssText = `left:${Math.random()*100}vw;top:${Math.random()*-20}vh;
+      width:${sz}px;height:${sz}px;
+      animation-duration:${12+Math.random()*14}s;
+      animation-delay:${Math.random()*15}s`;
+    const c = cols[Math.floor(Math.random() * cols.length)];
+    el.style.background = c;
+    el.style.borderRadius = '50% 0 50% 0';
+    el.style.transform = `rotate(${Math.random()*360}deg)`;
+    lock.appendChild(el);
+  }
+})();
+
+
+/* ══════════════════════
+   MAIN PAGE INIT
+══════════════════════ */
+function initMain() {
+  const diff = Math.floor((new Date() - new Date('2025-03-29T00:00:00')) / 86400000);
+  document.getElementById('dayCount').textContent = diff;
+  initPetals();
+  initParallax();
+}
+
+/* ══════════════════════
+   PARALLAX
+══════════════════════ */
+function initParallax() {
+  const counter = document.getElementById('dayCounter');
+  const header  = document.querySelector('.header');
+  window.addEventListener('scroll', () => {
+    const sy = window.scrollY;
+    if (counter) counter.style.transform = `translateY(${sy * -0.06}px)`;
+    if (header)  header.style.transform  = `translateY(${sy * -0.04}px)`;
+  }, {passive: true});
+}
+
+/* ══════════════════════
+   LETTER
+══════════════════════ */
+const PARAS = [
+  `我們在一起的一周年，本該好好紀念、好好陪你的日子，卻因為工作的緣故，沒能給你一場像樣的慶祝。連生日，也因為忙碌的工作，沒能好好規劃，每次想起這些，我都特別自責。`,
+  `我試過很多辦法想彌補，想讓你感受到我對你的重視。帶你去吃什麼、去做什麼，可總是只能吃一頓好吃的，就回家休息。`,
+  `其實我心裡攢了太多太多的話想對你說，但總是礙於害羞的原因總是無法好好的說出口，`,
+  `謝謝你，在我低落的時候接住我。\n謝謝你，沒有嫌棄我，耐心地陪著我。\n謝謝你，一直無條件地支持我的事業。\n正是因為有你，我才有勇氣去拼、去闖。`,
+  `很多時候，我都覺得自己太幸運了，幸運能遇見你、我的女朋友是你，每次想到這裡，我心裡就滿是慶幸和幸福，那種感覺，真的是任何言語都無法形容的。`,
+  `你的優點真的是多到數不清。聰明又獨立，有自己的想法和追求，有事業心、有執行力，長得又那麼漂亮，更善良與溫柔。你也有小小的缺點，但在我眼裡，那些缺點根本不足掛齒，反而更真實、更可愛，更讓我心動。`,
+  `只是每次看到你不自信的時候，我就很難過。明明你那麼優秀，可你總是習慣性地否定自己，總是覺得自己不夠好。其實我想告訴你，在我心裡，你就是最好的，當然不是只有我這麼想。不過轉頭看看我自己，也都有些不自信哈哈哈。`,
+  `這一年，真的辛苦你了，謝謝你一路的陪伴、包容和照顧，謝謝你出現在我的生命裡。`,
+  `往後的日子，我還有很多不懂的地方，很多做得不夠好的地方，還請你繼續多多指教，一起變成更好的我們。`,
+];
+const PS = `ps 我真的很愛你，現在已經完全想象不出沒有你的生活會長什麼樣子。記得一定要好好照顧自己，好好愛自己，就像你愛我一樣。你的開心和健康，才是我最在意的事情。`;
+
+function buildLetter() {
+  const inner = document.getElementById('letterInner');
+  const heading = inner.querySelector('.letter-heading');
+  inner.innerHTML = '';
+  inner.appendChild(heading);
+  PARAS.forEach((text, i) => {
+    const p = document.createElement('div');
+    p.className = 'letter-para';
+    p.style.transitionDelay = (i * 0.09) + 's';
+    p.innerHTML = text.replace(/\n/g,'<br>');
+    inner.appendChild(p);
+  });
+  const psEl = document.createElement('span');
+  psEl.className = 'letter-ps';
+  psEl.style.transitionDelay = (PARAS.length * 0.09) + 's';
+  psEl.textContent = PS;
+  inner.appendChild(psEl);
+  const line = document.createElement('div');
+  line.className = 'letter-line';
+  inner.appendChild(line);
+  const footer = document.createElement('div');
+  footer.className = 'letter-footer';
+  footer.style.transitionDelay = (PARAS.length * 0.09 + 0.12) + 's';
+  footer.textContent = '愛你的男朋友 ♡';
+  inner.appendChild(footer);
+}
+
+function revealLetter() {
+  setTimeout(() => {
+    document.querySelectorAll('.letter-para,.letter-ps,.letter-footer')
+      .forEach(el => el.classList.add('visible'));
+  }, 120);
+}
+
+function hideLetter() {
+  document.querySelectorAll('.letter-para,.letter-ps,.letter-footer')
+    .forEach(el => el.classList.remove('visible'));
+}
+
+/* ══════════════════════
+   ENVELOPE CONFETTI
+══════════════════════ */
+function launchConfetti(el) {
+  const r  = el.getBoundingClientRect();
+  const ox = r.left + r.width / 2, oy = r.top + r.height / 2;
+  const cols = ['#e8b4a4','#c97a7a','#e2cda0','#c9a96e','#f5d0c5','#dba89a','#f0e0c8','#d4b8e8','#b4d4e8','#a8e4c8'];
+
+  for (let i = 0; i < 130; i++) {
+    const piece = document.createElement('div');
+    const sz  = 5 + Math.random() * 9;
+    const col = cols[Math.floor(Math.random() * cols.length)];
+    const ang = Math.random() * Math.PI * 2;
+    const dist = 80 + Math.random() * 260;
+    const tx = Math.cos(ang) * dist, ty = Math.sin(ang) * dist * .7 - 50;
+    const isRound = Math.random() < .3;
+    const delay = Math.random() * 280, dur = 1300 + Math.random() * 800;
+    piece.style.cssText = `position:fixed;pointer-events:none;z-index:200;
+      width:${sz}px;height:${isRound?sz:sz*(.35+Math.random()*.5)}px;
+      background:${col};border-radius:${isRound?'50%':'2px'};
+      left:${ox}px;top:${oy}px;`;
+    document.body.appendChild(piece);
+    const t0 = performance.now() + delay;
+    (function(p,tx,ty,dur){
+      function f(now){
+        if(now<t0){requestAnimationFrame(f);return}
+        const pct=Math.min((now-t0)/dur,1);
+        const ease=1-Math.pow(1-pct,2);
+        const x=ox+tx*ease, y=oy+ty*ease+240*pct*pct;
+        const op=pct<.7?1:1-(pct-.7)/.3;
+        p.style.left=x+'px';p.style.top=y+'px';
+        p.style.transform=`rotate(${pct*520}deg) scale(${1-pct*.4})`;
+        p.style.opacity=op;
+        if(pct<1)requestAnimationFrame(f);else p.remove();
+      }
+      requestAnimationFrame(f);
+    })(piece,tx,ty,dur);
+  }
+}
+
+/* ══════════════════════
+   ENVELOPE TOGGLE
+══════════════════════ */
+let isOpen = false;
+function toggleEnvelope() {
+  const env   = document.getElementById('envelope');
+  const flap  = document.getElementById('envFlap');
+  const outer = document.getElementById('letterOuter');
+  const hint  = document.getElementById('hint');
+  isOpen = !isOpen;
+  if (isOpen) {
+    flap.style.transition = 'transform .7s cubic-bezier(.4,0,.2,1)';
+    flap.style.transform  = 'rotateX(-175deg)';
+    env.classList.add('is-open');
+    setTimeout(() => launchConfetti(env), 280);
+    setTimeout(() => {
+      buildLetter(); outer.classList.add('open');
+      setTimeout(revealLetter, 420);
+    }, 500);
+    hint.textContent = '再次點擊信封，將信收起 ✦';
+    hint.style.opacity = '.6';
+  } else {
+    flap.style.transform = 'rotateX(0deg)';
+    env.classList.remove('is-open');
+    hideLetter();
+    setTimeout(() => outer.classList.remove('open'), 180);
+    hint.textContent = '點擊信封，打開我想對你說的話 ✦';
+    hint.style.opacity = '1';
+  }
+}
+
+/* ══════════════════════
+   AMBIENT PETALS
+══════════════════════ */
+function initPetals() {
+  const c = document.getElementById('petals');
+  const cols = ['#e8b4a4','#f5d0c5','#dba89a','#c97a7a','#e2cda0','#f0e0c8'];
+  for (let i = 0; i < 28; i++) {
+    const el = document.createElement('div');
+    el.className = 'petal';
+    const sz = 6 + Math.random() * 12;
+    const col = cols[Math.floor(Math.random() * cols.length)];
+    el.style.cssText = `left:${Math.random()*100}vw;animation-duration:${9+Math.random()*13}s;animation-delay:${Math.random()*20}s;width:${sz}px;height:${sz}px;`;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 20 20');
+    svg.style.cssText=`width:${sz}px;height:${sz}px;`;
+    const e = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    e.setAttribute('cx','10');e.setAttribute('cy','10');
+    e.setAttribute('rx','5');e.setAttribute('ry','9');
+    e.setAttribute('fill',col);
+    e.setAttribute('transform',`rotate(${Math.random()*360},10,10)`);
+    svg.appendChild(e);el.appendChild(svg);c.appendChild(el);
+  }
+}
+</script>
+</body>
+</html>
